@@ -20,7 +20,7 @@ let animationTime = 0;
 let sceneTime = 0;
 let phase = 'intro';
 let videoTimer = null;
-const MUSIC_PATH = 'media/music/background.mp3';
+const MUSIC_PATH = 'https://www.image2url.com/r2/default/audio/1784220394473-e7e4e775-454c-416c-989e-e2951ea9d3a3.mp3';
 const VIDEO_URL = 'https://www.image2url.com/r2/default/videos/1784218377496-781f2b96-d4a0-438a-8479-402ad06e7432.mp4';
 
 const words = ['Пусть', 'каждый', 'твой', 'день', 'будет', 'наполнен', 'улыбками', 'любовью', 'теплом', 'и', 'счастьем'];
