@@ -21,8 +21,7 @@ let sceneTime = 0;
 let phase = 'intro';
 let videoTimer = null;
 const MUSIC_PATH = 'media/music/background.mp3';
-const VIDEO_PATH = 'media/video/intro.mp4';
-const YOUTUBE_EMBED = 'https://www.youtube.com/embed/mPLCBsr_HM8?start=45&autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
+const YOUTUBE_EMBED = 'https://www.youtube.com/embed/8Ct378DidlU?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
 
 const words = ['Пусть', 'каждый', 'твой', 'день', 'будет', 'наполнен', 'улыбками', 'любовью', 'теплом', 'и', 'счастьем'];
 
@@ -157,27 +156,12 @@ function startVideo() {
   phase = 'video';
   setOverlay(introOverlay, false);
   setOverlay(videoContainer, true);
-  videoIframe.classList.add('hidden-element');
-  videoPlayer.classList.remove('hidden-element');
-
-  videoPlayer.muted = false;
-  videoPlayer.src = VIDEO_PATH;
-
-  videoPlayer.onloadedmetadata = () => {
-    if (videoPlayer.duration > 45) {
-      videoPlayer.currentTime = 45;
-    }
-  };
-
-  videoPlayer.onerror = () => {
-    fallbackToYouTube();
-  };
-
-  videoPlayer.play().then(() => {
-    videoTimer = setTimeout(finishVideo, 41000);
-  }).catch(() => {
-    fallbackToYouTube();
-  });
+  videoPlayer.pause();
+  videoPlayer.src = '';
+  videoPlayer.classList.add('hidden-element');
+  videoIframe.classList.remove('hidden-element');
+  videoIframe.src = YOUTUBE_EMBED;
+  videoTimer = setTimeout(finishVideo, 41000);
 }
 
 function finishVideo() {
@@ -194,14 +178,6 @@ function finishVideo() {
   setTimeout(() => setOverlay(explosionOverlay, false), 1000);
 }
 
-function fallbackToYouTube() {
-  videoPlayer.pause();
-  videoPlayer.src = '';
-  videoPlayer.classList.add('hidden-element');
-  videoIframe.classList.remove('hidden-element');
-  videoIframe.src = YOUTUBE_EMBED;
-  videoTimer = setTimeout(finishVideo, 41000);
-}
 
 function tryPlayMusic() {
   if (!music.src) {
