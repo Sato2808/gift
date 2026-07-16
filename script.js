@@ -166,9 +166,15 @@ function startVideo() {
   videoPlayer.muted = false;
   videoPlayer.volume = 1;
   startAnimation();
-  videoPlayer.play().catch(() => {});
-  clearTimeout(videoTimer);
-  videoTimer = setTimeout(finishVideo, 64000);
+  const playVideo = () => {
+    videoPlayer.play().then(() => {
+      clearTimeout(videoTimer);
+      videoTimer = setTimeout(finishVideo, 64000);
+    }).catch(() => {
+      setTimeout(playVideo, 500);
+    });
+  };
+  playVideo();
 }
 
 function finishVideo() {
