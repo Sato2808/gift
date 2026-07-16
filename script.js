@@ -21,7 +21,7 @@ let sceneTime = 0;
 let phase = 'intro';
 let videoTimer = null;
 const MUSIC_PATH = 'media/music/background.mp3';
-const YOUTUBE_EMBED = 'https://www.youtube.com/embed/8Ct378DidlU?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
+const VIDEO_URL = 'https://www.image2url.com/r2/default/videos/1784218377496-781f2b96-d4a0-438a-8479-402ad06e7432.mp4';
 
 const words = ['Пусть', 'каждый', 'твой', 'день', 'будет', 'наполнен', 'улыбками', 'любовью', 'теплом', 'и', 'счастьем'];
 
@@ -142,30 +142,35 @@ function setOverlay(overlay, visible) {
 
 function showIntro() {
   phase = 'intro';
-  setOverlay(introOverlay, true);
+  setOverlay(introOverlay, false);
   setOverlay(videoContainer, false);
   setOverlay(explosionOverlay, false);
   uiArea.classList.add('hidden');
-  videoIframe.src = '';
-  videoPlayer.src = '';
+  videoPlayer.pause();
+  videoPlayer.src = VIDEO_URL;
+  videoPlayer.load();
+  videoPlayer.currentTime = 0;
+  videoPlayer.muted = true;
   clearTimeout(videoTimer);
-  videoTimer = setTimeout(startVideo, 3000);
+  videoTimer = setTimeout(startVideo, 2000);
 }
 
 function startVideo() {
   phase = 'video';
   setOverlay(introOverlay, false);
   setOverlay(videoContainer, true);
-  videoPlayer.pause();
-  videoPlayer.src = '';
-  videoPlayer.classList.add('hidden-element');
-  videoIframe.classList.remove('hidden-element');
-  videoIframe.src = YOUTUBE_EMBED;
-  videoTimer = setTimeout(finishVideo, 41000);
+  videoPlayer.classList.remove('hidden-element');
+  videoIframe.classList.add('hidden-element');
+  videoPlayer.currentTime = 0;
+  startAnimation();
+  videoPlayer.play().catch(() => {});
+  clearTimeout(videoTimer);
+  videoTimer = setTimeout(finishVideo, 64000);
 }
 
 function finishVideo() {
   phase = 'transition';
+  clearTimeout(videoTimer);
   setOverlay(videoContainer, false);
   setOverlay(explosionOverlay, true);
   uiArea.classList.remove('hidden');
@@ -393,6 +398,7 @@ function toggleMusic() {
 }
 
 function restart() {
+  clearTimeout(videoTimer);
   setOverlay(introOverlay, false);
   setOverlay(videoContainer, false);
   setOverlay(explosionOverlay, false);
@@ -410,6 +416,8 @@ window.addEventListener('load', () => {
   resize();
   showIntro();
 });
+
+videoPlayer.addEventListener('ended', finishVideo);
 
 musicButton.addEventListener('click', toggleMusic);
 restartButton.addEventListener('click', restart);
