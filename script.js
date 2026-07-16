@@ -150,6 +150,7 @@ function showIntro() {
   videoIframe.src = '';
   videoPlayer.src = '';
   clearTimeout(videoTimer);
+  videoTimer = setTimeout(startVideo, 3000);
 }
 
 function startVideo() {
@@ -432,24 +433,6 @@ window.addEventListener('resize', resize);
 window.addEventListener('load', () => {
   resize();
   showIntro();
-});
-
-introOverlay.addEventListener('click', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (phase === 'intro') {
-    console.log('Starting video from intro click');
-    startVideo();
-  }
-});
-
-introOverlay.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (phase === 'intro') {
-    console.log('Starting video from intro touch');
-    startVideo();
-  }
 });
 
 musicButton.addEventListener('click', toggleMusic);

@@ -80,7 +80,7 @@ body {
 }
 
 #introOverlay {
-  cursor: pointer;
+  cursor: default;
 }
 
 .prompt-card {
@@ -91,8 +91,6 @@ body {
   backdrop-filter: blur(24px);
   border-radius: 28px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
-  cursor: pointer;
-  pointer-events: auto;
 }
 
 .prompt-title {
