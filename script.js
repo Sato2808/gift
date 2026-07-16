@@ -150,7 +150,8 @@ function showIntro() {
   videoPlayer.src = VIDEO_URL;
   videoPlayer.load();
   videoPlayer.currentTime = 0;
-  videoPlayer.muted = true;
+  videoPlayer.muted = false;
+  videoPlayer.volume = 1;
   clearTimeout(videoTimer);
   videoTimer = setTimeout(startVideo, 2000);
 }
@@ -162,6 +163,8 @@ function startVideo() {
   videoPlayer.classList.remove('hidden-element');
   videoIframe.classList.add('hidden-element');
   videoPlayer.currentTime = 0;
+  videoPlayer.muted = false;
+  videoPlayer.volume = 1;
   startAnimation();
   videoPlayer.play().catch(() => {});
   clearTimeout(videoTimer);
