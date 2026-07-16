@@ -434,5 +434,11 @@ window.addEventListener('load', () => {
   showIntro();
 });
 
+introOverlay.addEventListener('click', () => {
+  if (phase === 'intro') {
+    startVideo();
+  }
+});
+
 musicButton.addEventListener('click', toggleMusic);
 restartButton.addEventListener('click', restart);
