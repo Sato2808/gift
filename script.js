@@ -434,8 +434,20 @@ window.addEventListener('load', () => {
   showIntro();
 });
 
-introOverlay.addEventListener('click', () => {
+introOverlay.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
   if (phase === 'intro') {
+    console.log('Starting video from intro click');
+    startVideo();
+  }
+});
+
+introOverlay.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (phase === 'intro') {
+    console.log('Starting video from intro touch');
     startVideo();
   }
 });
