@@ -1,0 +1,139 @@
+:root {
+  --pink-1: #ff4f81;
+  --pink-2: #ff7eb3;
+  --pink-3: #ff9ecf;
+  --pink-4: #ffd6e7;
+  --white: #ffffff;
+  --cream: #ffe8f3;
+  --gold: #ffd166;
+  --bg: #fff7fb;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #04010a;
+  font-family: 'Poppins', sans-serif;
+  color: var(--white);
+}
+
+body {
+  position: relative;
+}
+
+.app-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #2b0b2d 0%, #07030a 60%, #020103 100%);
+}
+
+#sceneCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.overlay-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 65%);
+  mix-blend-mode: screen;
+  animation: pulseGlow 5s ease-in-out infinite alternate;
+}
+
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.controls button {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.controls button:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.scene-message {
+  align-self: center;
+  text-align: center;
+  font-size: clamp(1.1rem, 2vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: none;
+  max-width: min(780px, 88vw);
+}
+
+.scene-message.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes pulseGlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .ui-layer {
+    padding: 16px;
+  }
+
+  .controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .controls button {
+    padding: 9px 13px;
+    font-size: 0.9rem;
+  }
+}
