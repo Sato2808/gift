@@ -22,12 +22,15 @@
           <div class="prompt-title">Пожалуйста, поверни телефон</div>
           <div class="prompt-subtitle">Чтобы особое поздравление началось плавно.</div>
           <div class="prompt-hint">↻</div>
+          <div class="prompt-start">Коснись экрана, чтобы начать</div>
         </div>
       </div>
 
       <div id="videoContainer" class="overlay">
+        <video id="videoPlayer" playsinline webkit-playsinline muted></video>
         <iframe
           id="videoIframe"
+          class="hidden-element"
           allow="autoplay; fullscreen; picture-in-picture"
           frameborder="0"
           allowfullscreen
