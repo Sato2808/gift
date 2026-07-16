@@ -20,6 +20,7 @@ let animationTime = 0;
 let sceneTime = 0;
 let phase = 'intro';
 let videoTimer = null;
+let gestureHandled = false;
 const MUSIC_PATH = 'https://www.image2url.com/r2/default/audio/1784221022325-eaaa406d-3ef4-4e4b-be36-f252d6dbd5ac.mp3';
 const VIDEO_URL = 'https://www.image2url.com/r2/default/videos/1784218377496-781f2b96-d4a0-438a-8479-402ad06e7432.mp4';
 
@@ -140,8 +141,13 @@ function setOverlay(overlay, visible) {
   else overlay.classList.remove('active');
 }
 
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.matchMedia('(pointer: coarse)').matches;
+}
+
 function showIntro() {
   phase = 'intro';
+  gestureHandled = false;
   setOverlay(introOverlay, false);
   setOverlay(videoContainer, false);
   setOverlay(explosionOverlay, false);
@@ -153,10 +159,27 @@ function showIntro() {
   videoPlayer.muted = false;
   videoPlayer.volume = 1;
   clearTimeout(videoTimer);
-  videoTimer = setTimeout(startVideo, 2000);
+  if (isMobileDevice()) {
+    attachStartGesture();
+  } else {
+    videoTimer = setTimeout(startVideo, 2000);
+  }
+}
+
+function attachStartGesture() {
+  if (gestureHandled) return;
+  const startOnGesture = () => {
+    gestureHandled = true;
+    document.removeEventListener('touchstart', startOnGesture, { passive: true });
+    document.removeEventListener('click', startOnGesture);
+    startVideo();
+  };
+  document.addEventListener('touchstart', startOnGesture, { passive: true });
+  document.addEventListener('click', startOnGesture);
 }
 
 function startVideo() {
+  if (phase === 'video') return;
   phase = 'video';
   setOverlay(introOverlay, false);
   setOverlay(videoContainer, true);
@@ -171,7 +194,9 @@ function startVideo() {
       clearTimeout(videoTimer);
       videoTimer = setTimeout(finishVideo, 64000);
     }).catch(() => {
-      setTimeout(playVideo, 500);
+      if (isMobileDevice()) {
+        setTimeout(playVideo, 400);
+      }
     });
   };
   playVideo();

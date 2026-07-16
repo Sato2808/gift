@@ -66,6 +66,7 @@ body {
 
 #videoContainer {
   background: black;
+  touch-action: manipulation;
 }
 
 #videoContainer iframe,
