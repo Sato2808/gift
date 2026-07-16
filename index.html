@@ -17,18 +17,39 @@
     <div class="shell">
       <canvas id="canvas"></canvas>
 
-      <div class="layer top-controls">
-        <button id="musicButton" class="control">♪ Музыка</button>
-        <button id="restartButton" class="control">↻ Повторить</button>
+      <div id="introOverlay" class="overlay active">
+        <div class="prompt-card">
+          <div class="prompt-title">Пожалуйста, поверни телефон</div>
+          <div class="prompt-subtitle">Чтобы особое поздравление началось плавно.</div>
+          <div class="prompt-hint">↻</div>
+        </div>
       </div>
 
-      <div class="layer content">
-        <div class="headline">
-          <p class="intro">Для Назель</p>
-          <h1>Ты — мое чудо</h1>
-          <p class="description">Нежное поздравление, которое собирает свет, лепестки и сердце.</p>
+      <div id="videoContainer" class="overlay">
+        <iframe
+          id="videoIframe"
+          allow="autoplay; fullscreen; picture-in-picture"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
+      </div>
+
+      <div id="explosionOverlay" class="overlay"></div>
+
+      <div id="uiArea" class="ui-areas hidden">
+        <div class="layer top-controls">
+          <button id="musicButton" class="control">♪ Музыка</button>
+          <button id="restartButton" class="control">↻ Повторить</button>
         </div>
-        <div id="wordGrid" class="word-grid"></div>
+
+        <div class="layer content">
+          <div class="headline">
+            <p class="intro">Для Назель</p>
+            <h1>Ты — мое чудо</h1>
+            <p class="description">Нежное поздравление, которое собирает свет, лепестки и сердце.</p>
+          </div>
+          <div id="wordGrid" class="word-grid"></div>
+        </div>
       </div>
     </div>
 

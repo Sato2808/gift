@@ -2,9 +2,8 @@
   color-scheme: dark;
   --bg: #0f0712;
   --bg-soft: #170a1e;
-  --accent-rose: #ff86b3;
-  --accent-light: #ffd5e5;
-  --accent-gold: #ffd67e;
+  --accent-rose: #ff7ea4;
+  --accent-light: #ffc8df;
   --text-main: #f8eef5;
   --text-muted: rgba(248, 238, 245, 0.72);
 }
@@ -44,13 +43,90 @@ body {
   width: 100%;
   height: 100%;
   display: block;
+  background: black;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(12, 5, 16, 0.92);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease, visibility 1s ease;
+  z-index: 20;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+#videoContainer {
+  background: black;
+}
+
+#videoContainer iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.prompt-card {
+  max-width: 440px;
+  text-align: center;
+  padding: 30px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(24px);
+  border-radius: 28px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+}
+
+.prompt-title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  color: var(--text-main);
+}
+
+.prompt-subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 22px;
+}
+
+.prompt-hint {
+  font-size: 2.5rem;
+  color: var(--accent-rose);
+  transition: transform 0.9s ease;
+  animation: hintFloat 1.8s ease-in-out infinite;
+}
+
+@keyframes hintFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.ui-areas {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 1s ease;
+  z-index: 10;
+}
+
+.ui-areas.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .layer {
   position: absolute;
   left: 0;
   right: 0;
-  pointer-events: none;
 }
 
 .top-controls {
@@ -85,11 +161,12 @@ body {
   transform: translateY(-50%);
   text-align: center;
   padding: 0 24px;
+  pointer-events: none;
 }
 
 .headline {
   max-width: 760px;
-  margin: 0 auto 48px;
+  margin: 0 auto 44px;
 }
 
 .intro {
@@ -97,12 +174,12 @@ body {
   text-transform: uppercase;
   color: var(--text-muted);
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 h1 {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(3.4rem, 7vw, 6.5rem);
+  font-size: clamp(3.4rem, 7vw, 6rem);
   line-height: 0.92;
   letter-spacing: -0.04em;
   margin-bottom: 18px;

@@ -1,5 +1,10 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const introOverlay = document.getElementById('introOverlay');
+const videoContainer = document.getElementById('videoContainer');
+const videoIframe = document.getElementById('videoIframe');
+const explosionOverlay = document.getElementById('explosionOverlay');
+const uiArea = document.getElementById('uiArea');
 const music = document.getElementById('music');
 const musicButton = document.getElementById('musicButton');
 const restartButton = document.getElementById('restartButton');
@@ -8,30 +13,30 @@ const wordGrid = document.getElementById('wordGrid');
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
 let width = 0;
 let height = 0;
-let raf = null;
-let time = 0;
-let isPlaying = false;
-let startTime = null;
-let sceneProgress = 0;
+let rafId = null;
+let lastFrameTime = 0;
+let animationTime = 0;
+let sceneTime = 0;
+let phase = 'intro';
+let videoTimer = null;
+
+const words = ['Пусть', 'каждый', 'твой', 'день', 'будет', 'наполнен', 'улыбками', 'любовью', 'теплом', 'и', 'счастьем'];
 
 const state = {
   rays: [],
   stars: [],
-  glow: [],
+  glows: [],
   petals: [],
-  heart: [],
-  pulse: 0
+  heartDots: [],
+  burstRays: []
 };
 
-const words = ['Пусть', 'каждый', 'твой', 'день', 'будет', 'наполнен', 'улыбками', 'любовью', 'теплом', 'и', 'счастьем'];
-
 const palette = {
-  dark: '#100613',
-  soft: '#1b0b23',
-  rosy: '#ff7ea4',
+  rose: '#ff7ea4',
   blush: '#ffc8df',
-  pale: '#f9eef5',
-  gold: '#ffd97f'
+  soft: '#f8eef5',
+  gold: '#ffd97f',
+  dark: '#0b0510'
 };
 
 function resize() {
@@ -42,28 +47,24 @@ function resize() {
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  resetScene();
+  initParticles();
 }
 
-function resetScene() {
-  state.rays = Array.from({ length: 18 }, createRay);
-  state.stars = Array.from({ length: 90 }, createStar);
-  state.glow = Array.from({ length: 24 }, createGlow);
+function initParticles() {
+  state.rays = Array.from({ length: 16 }, createRay);
+  state.stars = Array.from({ length: 100 }, createStar);
+  state.glows = Array.from({ length: 24 }, createGlow);
   state.petals = Array.from({ length: 72 }, createPetal);
-  state.heart = Array.from({ length: 280 }, createHeartDot);
-  state.pulse = 0;
-  time = 0;
-  startTime = null;
-  sceneProgress = 0;
-  wordGrid.innerHTML = '';
+  state.heartDots = Array.from({ length: 260 }, createHeartDot);
+  state.burstRays = Array.from({ length: 18 }, createBurstRay);
 }
 
 function createRay() {
   return {
     angle: Math.random() * Math.PI * 2,
-    extend: 0.05 + Math.random() * 0.18,
-    width: 1.2 + Math.random() * 1.6,
-    alpha: 0.08 + Math.random() * 0.15,
+    length: 0.3 + Math.random() * 0.15,
+    width: 1.1 + Math.random() * 1.5,
+    alpha: 0.08 + Math.random() * 0.12,
     phase: Math.random() * Math.PI * 2
   };
 }
@@ -73,18 +74,18 @@ function createStar() {
     x: Math.random() * width,
     y: Math.random() * height,
     radius: Math.random() * 1.8 + 0.7,
-    alpha: 0.2 + Math.random() * 0.35,
+    alpha: 0.18 + Math.random() * 0.42,
     twinkle: Math.random() * Math.PI * 2,
-    hue: Math.random() > 0.5 ? palette.blush : palette.pale
+    color: Math.random() > 0.5 ? palette.blush : palette.soft
   };
 }
 
 function createGlow() {
   return {
-    x: width * 0.5 + (Math.random() - 0.5) * width * 0.35,
-    y: height * 0.5 + (Math.random() - 0.5) * height * 0.35,
-    size: Math.random() * 120 + 90,
-    alpha: 0.08 + Math.random() * 0.08
+    x: width * 0.45 + (Math.random() - 0.5) * width * 0.38,
+    y: height * 0.45 + (Math.random() - 0.5) * height * 0.38,
+    size: Math.random() * 90 + 80,
+    alpha: 0.08 + Math.random() * 0.1
   };
 }
 
@@ -94,25 +95,32 @@ function createPetal() {
     y: Math.random() * height + height,
     size: Math.random() * 14 + 8,
     drift: (Math.random() - 0.5) * 0.35,
-    speed: 0.8 + Math.random() * 1.2,
+    speed: 0.8 + Math.random() * 1.1,
     rotation: Math.random() * Math.PI * 2,
     alpha: 0.24 + Math.random() * 0.26
   };
 }
 
 function createHeartDot() {
-  const theta = Math.random() * Math.PI * 2;
-  const radius = Math.random() * 0.45 + 0.2;
+  const angle = Math.random() * Math.PI * 2;
+  const radiusFactor = Math.random() * 0.5 + 0.18;
   return {
-    x: width / 2 + Math.sin(theta) * radius * width * 0.16,
-    y: height / 2 - (Math.cos(theta) * 0.8 + (Math.sin(theta) ** 2) * 0.2) * height * 0.14,
-    tx: width / 2,
-    ty: height / 2,
-    radius: 1 + Math.random() * 1.8,
-    alpha: 0.35 + Math.random() * 0.45,
+    x: width / 2 + Math.sin(angle) * radiusFactor * width * 0.14,
+    y: height / 2 - (Math.cos(angle) * 0.78 + (Math.sin(angle) ** 2) * 0.18) * height * 0.13,
+    radius: 0.8 + Math.random() * 1.6,
+    alpha: 0.35 + Math.random() * 0.4,
     offset: Math.random() * Math.PI * 2,
-    speed: 0.06 + Math.random() * 0.08,
-    hue: Math.random() > 0.6 ? palette.rosy : palette.blush
+    speed: 0.05 + Math.random() * 0.08,
+    color: Math.random() > 0.6 ? palette.rose : palette.blush
+  };
+}
+
+function createBurstRay() {
+  return {
+    angle: Math.random() * Math.PI * 2,
+    length: Math.random() * 260 + 180,
+    width: 2.2 + Math.random() * 3.6,
+    alpha: 0.08 + Math.random() * 0.18
   };
 }
 
@@ -124,22 +132,74 @@ function easeInOut(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+function setOverlay(overlay, visible) {
+  if (visible) overlay.classList.add('active');
+  else overlay.classList.remove('active');
+}
+
+function showIntro() {
+  phase = 'intro';
+  setOverlay(introOverlay, true);
+  setOverlay(videoContainer, false);
+  setOverlay(explosionOverlay, false);
+  uiArea.classList.add('hidden');
+  videoIframe.src = '';
+  clearTimeout(videoTimer);
+  videoTimer = setTimeout(startVideo, 3600);
+}
+
+function startVideo() {
+  phase = 'video';
+  setOverlay(introOverlay, false);
+  setOverlay(videoContainer, true);
+  const embedUrl = 'https://www.youtube.com/embed/mPLCBsr_HM8?start=45&autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
+  videoIframe.src = embedUrl;
+  videoTimer = setTimeout(finishVideo, 41000);
+}
+
+function finishVideo() {
+  phase = 'transition';
+  setOverlay(videoContainer, false);
+  setOverlay(explosionOverlay, true);
+  uiArea.classList.remove('hidden');
+  tryPlayMusic();
+  resetScene();
+  startAnimation();
+  setTimeout(() => setOverlay(explosionOverlay, false), 1000);
+}
+
+function tryPlayMusic() {
+  if (!music.src) {
+    music.src = 'audio.mp3';
+    music.loop = true;
+  }
+  music.play().catch(() => {});
+}
+
+function resetScene() {
+  initParticles();
+  animationTime = 0;
+  sceneTime = 0;
+  lastFrameTime = performance.now();
+  wordGrid.innerHTML = '';
+}
+
 function drawBackground() {
-  const bg = ctx.createLinearGradient(0, 0, 0, height);
-  bg.addColorStop(0, '#1d0a1f');
-  bg.addColorStop(0.45, '#1b0b23');
-  bg.addColorStop(1, '#08020a');
-  ctx.fillStyle = bg;
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, '#1d0a1f');
+  gradient.addColorStop(0.42, '#1a081f');
+  gradient.addColorStop(1, '#07030a');
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 }
 
 function drawStars(dt) {
   state.stars.forEach((star) => {
     star.twinkle += dt * 2.2;
-    const brightness = star.alpha + Math.sin(star.twinkle) * 0.18;
+    const alpha = star.alpha + Math.sin(star.twinkle) * 0.18;
     ctx.save();
-    ctx.globalAlpha = brightness;
-    ctx.fillStyle = star.hue;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = star.color;
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -150,50 +210,54 @@ function drawStars(dt) {
 function drawRays(dt) {
   ctx.save();
   ctx.translate(width / 2, height / 2);
-  state.rays.forEach((ray, index) => {
-    const length = Math.max(width, height) * (0.28 + ray.extend) * (0.92 + Math.sin(time * 0.8 + index * 0.42) * 0.05);
-    const angle = ray.angle + Math.sin(time * 0.4 + ray.phase) * 0.08;
+  state.rays.forEach((ray) => {
+    const wave = 0.9 + Math.sin(animationTime * 0.7 + ray.phase) * 0.04;
+    const length = Math.max(width, height) * (ray.length + 0.15) * wave;
+    const angle = ray.angle + Math.sin(animationTime * 0.35 + ray.phase) * 0.06;
     const x = Math.cos(angle) * length;
     const y = Math.sin(angle) * length;
-    ctx.strokeStyle = `rgba(255, 130, 175, ${ray.alpha})`;
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(255, 143, 185, ${ray.alpha})`;
     ctx.lineWidth = ray.width;
-    ctx.shadowBlur = 26;
-    ctx.shadowColor = 'rgba(255, 166, 199, 0.32)';
+    ctx.shadowBlur = 28;
+    ctx.shadowColor = 'rgba(255, 170, 205, 0.28)';
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(x, y);
     ctx.stroke();
+    ctx.restore();
   });
   ctx.restore();
 }
 
 function drawGlow() {
-  state.glow.forEach((spot) => {
+  state.glows.forEach((glow) => {
     ctx.save();
-    ctx.globalAlpha = spot.alpha * (0.9 + Math.sin(time * 0.8) * 0.12);
-    const gradient = ctx.createRadialGradient(spot.x, spot.y, 0, spot.x, spot.y, spot.size);
-    gradient.addColorStop(0, 'rgba(255, 189, 214, 0.18)');
-    gradient.addColorStop(1, 'rgba(255, 189, 214, 0)');
+    ctx.globalAlpha = glow.alpha * (0.86 + Math.sin(animationTime * 0.9) * 0.12);
+    const gradient = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, glow.size);
+    gradient.addColorStop(0, 'rgba(255, 192, 223, 0.2)');
+    gradient.addColorStop(1, 'rgba(255, 192, 223, 0)');
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(spot.x, spot.y, spot.size, 0, Math.PI * 2);
+    ctx.arc(glow.x, glow.y, glow.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   });
 }
 
-function drawHeart(dt) {
-  const centerX = width / 2;
-  const centerY = height / 2;
-  state.heart.forEach((dot) => {
-    const tx = centerX + Math.sin(dot.offset + time * 0.8) * width * 0.04;
-    const ty = centerY + Math.cos(dot.offset + time * 0.6) * height * 0.03;
-    dot.x += (tx - dot.x) * dot.speed * dt * 30;
-    dot.y += (ty - dot.y) * dot.speed * dt * 30;
-    dot.alpha = 0.35 + Math.sin(time * 2 + dot.offset) * 0.12;
+function drawHeartDots(dt) {
+  const cx = width / 2;
+  const cy = height / 2;
+  state.heartDots.forEach((dot) => {
+    const targetX = cx + Math.sin(dot.offset + animationTime * 0.7) * width * 0.04;
+    const targetY = cy + Math.cos(dot.offset + animationTime * 0.5) * height * 0.03;
+    dot.x += (targetX - dot.x) * dot.speed * dt * 24;
+    dot.y += (targetY - dot.y) * dot.speed * dt * 24;
+    const alpha = dot.alpha * (0.72 + Math.sin(animationTime * 2 + dot.offset) * 0.1);
     ctx.save();
-    ctx.globalAlpha = dot.alpha;
-    ctx.fillStyle = dot.hue;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = dot.color;
     ctx.beginPath();
     ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -213,44 +277,43 @@ function drawPetals(dt) {
     ctx.save();
     ctx.translate(petal.x, petal.y);
     ctx.rotate(petal.rotation);
-    ctx.globalAlpha = petal.alpha * 0.8;
-    ctx.fillStyle = 'rgba(255, 191, 220, 0.62)';
+    ctx.globalAlpha = petal.alpha * 0.82;
+    ctx.fillStyle = 'rgba(255, 183, 215, 0.64)';
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(petal.size * 0.4, -petal.size * 0.4, petal.size, -petal.size * 0.2, petal.size * 0.45, petal.size * 0.8);
-    ctx.bezierCurveTo(petal.size * 0.12, petal.size * 1.1, -petal.size * 0.22, petal.size * 0.95, -petal.size * 0.5, petal.size * 0.8);
-    ctx.bezierCurveTo(-petal.size, -petal.size * 0.14, -petal.size * 0.4, -petal.size * 0.4, 0, 0);
+    ctx.bezierCurveTo(petal.size * 0.4, -petal.size * 0.42, petal.size, -petal.size * 0.18, petal.size * 0.44, petal.size * 0.82);
+    ctx.bezierCurveTo(petal.size * 0.12, petal.size * 1.12, -petal.size * 0.22, petal.size * 0.9, -petal.size * 0.5, petal.size * 0.82);
+    ctx.bezierCurveTo(-petal.size, -petal.size * 0.12, -petal.size * 0.4, -petal.size * 0.4, 0, 0);
     ctx.fill();
     ctx.restore();
   });
 }
 
-function drawFinalSparkles(dt) {
-  if (time < 12) return;
-  const sparkleCount = 16;
-  for (let i = 0; i < sparkleCount; i += 1) {
-    const angle = (Math.PI * 2 * i) / sparkleCount + time * 0.2;
-    const radius = Math.min(width, height) * 0.28;
-    const x = width / 2 + Math.cos(angle) * radius;
-    const y = height / 2 + Math.sin(angle) * radius;
-    const alpha = 0.3 + Math.sin(time * 2 + i) * 0.18;
+function drawBurst() {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  state.burstRays.forEach((ray) => {
+    const progress = Math.min(1, sceneTime / 0.45);
+    const length = ray.length * progress;
+    const alpha = ray.alpha * (0.9 - progress * 0.8);
+    const x = centerX + Math.cos(ray.angle) * length;
+    const y = centerY + Math.sin(ray.angle) * length;
     ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(255, 237, 245, 0.65)';
-    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = `rgba(255, 159, 201, ${alpha})`;
+    ctx.lineWidth = ray.width;
+    ctx.shadowBlur = 42;
+    ctx.shadowColor = 'rgba(255, 172, 210, 0.4)';
     ctx.beginPath();
-    ctx.moveTo(x - 4, y);
-    ctx.lineTo(x + 4, y);
-    ctx.moveTo(x, y - 4);
-    ctx.lineTo(x, y + 4);
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.restore();
-  }
+  });
 }
 
-function drawSoftGlow() {
+function drawFinalGlow() {
   const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) * 0.45);
-  gradient.addColorStop(0, 'rgba(255, 136, 184, 0.14)');
+  gradient.addColorStop(0, 'rgba(255, 139, 189, 0.16)');
   gradient.addColorStop(1, 'rgba(9, 4, 12, 0)');
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
@@ -259,67 +322,81 @@ function drawSoftGlow() {
   ctx.restore();
 }
 
+function updateWordGrid() {
+  const revealStart = 6.4;
+  if (sceneTime < revealStart) return;
+  const revealIndex = Math.min(words.length, Math.floor((sceneTime - revealStart) / 1.0) + 1);
+  if (wordGrid.childNodes.length === revealIndex) {
+    return;
+  }
+  wordGrid.innerHTML = '';
+  for (let i = 0; i < revealIndex; i += 1) {
+    const element = document.createElement('span');
+    element.className = 'word';
+    element.textContent = words[i];
+    element.style.animationDelay = `${i * 0.06}s`;
+    wordGrid.appendChild(element);
+  }
+}
+
 function animate(timestamp) {
-  if (!startTime) startTime = timestamp;
-  const delta = Math.min((timestamp - (time || timestamp)) / 1000, 0.033);
-  time = timestamp;
-  sceneProgress = (timestamp - startTime) / 1000;
+  if (!lastFrameTime) lastFrameTime = timestamp;
+  const dt = Math.min((timestamp - lastFrameTime) / 1000, 0.033);
+  lastFrameTime = timestamp;
+  animationTime += dt;
+  sceneTime += dt;
 
   drawBackground();
+  if (sceneTime < 1) drawBurst();
   drawGlow();
-  drawRays(delta);
-  drawStars(delta);
-  drawHeart(delta);
-  drawPetals(delta);
-  drawFinalSparkles(delta);
-  drawSoftGlow();
+  drawRays(dt);
+  drawStars(dt);
+  drawHeartDots(dt);
+  drawPetals(dt);
+  drawFinalGlow();
+  updateWordGrid();
 
-  updateWords(sceneProgress);
-  raf = requestAnimationFrame(animate);
+  rafId = requestAnimationFrame(animate);
 }
 
-function updateWords(progress) {
-  if (progress < 7) return;
-  const revealed = Math.min(words.length, Math.floor((progress - 7) / 1.05) + 1);
-  if (wordGrid.childNodes.length === revealed) return;
-  wordGrid.innerHTML = '';
-  for (let index = 0; index < revealed; index += 1) {
-    const span = document.createElement('span');
-    span.className = 'word';
-    span.textContent = words[index];
-    span.style.animationDelay = `${index * 0.06}s`;
-    wordGrid.appendChild(span);
-  }
+function startAnimation() {
+  lastFrameTime = 0;
+  sceneTime = 0;
+  animationTime = 0;
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(animate);
 }
 
-function playMusic() {
+function toggleMusic() {
   if (!music.src) {
     music.src = 'audio.mp3';
+    music.loop = true;
   }
-  musicButton.textContent = '♫ Музыка включена';
-  music.play().catch(() => {
-    musicButton.textContent = '♪ Включить музыку';
-  });
+  if (music.paused) {
+    music.play().catch(() => {});
+    musicButton.textContent = '♫ Музыка включена';
+  } else {
+    music.pause();
+    musicButton.textContent = '♪ Музыка';
+  }
 }
 
 function restart() {
-  cancelAnimationFrame(raf);
-  resetScene();
-  start();
-}
-
-function start() {
-  resize();
-  cancelAnimationFrame(raf);
-  startTime = null;
-  raf = requestAnimationFrame(animate);
+  setOverlay(introOverlay, false);
+  setOverlay(videoContainer, false);
+  setOverlay(explosionOverlay, false);
+  uiArea.classList.add('hidden');
+  wordGrid.innerHTML = '';
+  videoIframe.src = '';
+  if (rafId) cancelAnimationFrame(rafId);
+  showIntro();
 }
 
 window.addEventListener('resize', resize);
 window.addEventListener('load', () => {
-  resetScene();
-  start();
+  resize();
+  showIntro();
 });
 
-musicButton.addEventListener('click', playMusic);
+musicButton.addEventListener('click', toggleMusic);
 restartButton.addEventListener('click', restart);
