@@ -3,31 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#ff4f81" />
-    <title>С Днем Рождения, Назель</title>
+    <meta name="theme-color" content="#120718" />
+    <title>Для Назель — подарок</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <canvas id="sceneCanvas"></canvas>
-      <div class="overlay-glow"></div>
-      <div class="ui-layer">
-        <div class="controls">
-          <button id="musicToggle" type="button">♪ Музыка</button>
-          <button id="restartButton" type="button">↺ Повторить</button>
+    <div class="shell">
+      <canvas id="canvas"></canvas>
+
+      <div class="layer top-controls">
+        <button id="musicButton" class="control">♪ Музыка</button>
+        <button id="restartButton" class="control">↻ Повторить</button>
+      </div>
+
+      <div class="layer content">
+        <div class="headline">
+          <p class="intro">Для Назель</p>
+          <h1>Ты — мое чудо</h1>
+          <p class="description">Нежное поздравление, которое собирает свет, лепестки и сердце.</p>
         </div>
-        <div id="sceneMessage" class="scene-message"></div>
+        <div id="wordGrid" class="word-grid"></div>
       </div>
     </div>
 
-    <audio id="bgMusic" preload="auto" loop></audio>
-
+    <audio id="music" preload="auto"></audio>
     <script src="script.js"></script>
   </body>
 </html>
